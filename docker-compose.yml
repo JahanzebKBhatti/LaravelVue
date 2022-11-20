@@ -1,0 +1,65 @@
+version: '1.0'
+services:
+    web-app:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+        container_name: app
+        restart: unless-stopped
+        tty: true
+        networks:
+            - app-laravelvue
+        volumes:
+            - ./:/var/www
+            - ./docker/php/conf.d/local.ini:/usr/local/etc/php/conf.d/local.ini
+            - ./docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+            - ./docker/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
+            - /var/www/vendor/
+
+    web-server:
+        build:
+            context: .
+            dockerfile: docker/nginx/Dockerfile
+        container_name: server
+        restart: unless-stopped
+        tty: true
+        networks:
+            - app-laravelvue
+        volumes:
+            - ./:/var/www
+            - ./docker/nginx/conf.d/:/etc/nginx/conf.d/
+        ports:
+            - "80:80"
+            - "443:443"
+
+    web-database:
+        build:
+            context: .
+            dockerfile: docker/mysql/Dockerfile
+        container_name: database
+        restart: unless-stopped
+        tty: true
+        networks:
+            - app-laravelvue
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+            SERVICE_NAME: mysql
+        volumes:
+            - dbdata:/var/lib/mysql/
+            - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
+        ports:
+            - "3306:3306"
+
+#Docker Networks
+networks:
+    app-laravelvue:
+        driver: bridge
+
+#Volumes
+volumes:
+    dbdata:
+        driver: local
+
