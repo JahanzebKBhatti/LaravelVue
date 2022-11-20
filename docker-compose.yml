@@ -48,7 +48,7 @@ services:
             MYSQL_PASSWORD: ${DB_PASSWORD}
             SERVICE_NAME: mysql
         volumes:
-            - dbdata:/var/lib/mysql/
+            - ./docker/mysql/data:/var/lib/mysql/
             - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
         ports:
             - "3306:3306"
@@ -57,9 +57,3 @@ services:
 networks:
     app-laravelvue:
         driver: bridge
-
-#Volumes
-volumes:
-    dbdata:
-        driver: local
-
